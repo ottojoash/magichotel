@@ -1,0 +1,998 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Hotel - Luxury & Comfort</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            background-color: #0a0a0a;
+            color: #e0e0e0;
+        }
+
+        /* ===== STATIC NAVIGATION BAR ===== */
+        .navbar {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            background: #000000;
+            padding: 1.2rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.9rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #ff6600;
+            text-transform: uppercase;
+            text-decoration: none;
+        }
+
+        .nav-links a {
+            color: #f0f0f0;
+            text-decoration: none;
+            margin-left: 2.2rem;
+            font-size: 1rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #ff6600;
+        }
+
+        /* ===== FULL WIDTH HERO IMAGE ===== */
+        .hero {
+            width: 100%;
+            height: 85vh;
+            min-height: 550px;
+            background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4)), url('https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?auto=compress&cs=tinysrgb&w=1600');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            padding: 2rem;
+        }
+
+        .hero-content h1 {
+            font-size: 4.5rem;
+            font-weight: 700;
+            letter-spacing: 4px;
+            color: white;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .hero-content h1 span {
+            color: #ff6600;
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            color: #ddd;
+            margin-bottom: 2rem;
+        }
+
+        .hero-btn {
+            background: #ff6600;
+            color: #000;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .hero-btn:hover {
+            background: #ff8833;
+            transform: translateY(-3px);
+        }
+
+        /* ===== CONTAINER ===== */
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* ===== SECTION TITLES ===== */
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: #ff6600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .section-title .divider {
+            width: 80px;
+            height: 3px;
+            background: #ff6600;
+            margin: 1rem auto 0;
+            border-radius: 3px;
+        }
+
+        /* ===== RECENT POSTS ===== */
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .post-card {
+            background: #111;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid #2a2a2a;
+            transition: all 0.3s;
+        }
+
+        .post-card:hover {
+            transform: translateY(-5px);
+            border-color: #ff6600;
+        }
+
+        .post-image {
+            width: 100%;
+            height: 220px;
+            overflow: hidden;
+        }
+
+        .post-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .post-card:hover .post-image img {
+            transform: scale(1.05);
+        }
+
+        .post-content {
+            padding: 1.5rem;
+        }
+
+        .post-category {
+            color: #ff6600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .post-content p {
+            color: #aaa;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .read-more {
+            color: #ff6600;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .read-more:hover {
+            color: #ffaa44;
+        }
+
+        /* ===== RESTAURANT MENU SECTION ===== */
+        .menu-section {
+            background: #0f0f0f;
+            border-radius: 30px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .menu-category {
+            margin-bottom: 2rem;
+        }
+
+        .menu-category h3 {
+            color: #ff6600;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #ff6600;
+            padding-left: 1rem;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .menu-item {
+            background: #111;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid #2a2a2a;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-5px);
+            border-color: #ff6600;
+        }
+
+        .menu-item-image {
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .menu-item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .menu-item:hover .menu-item-image img {
+            transform: scale(1.05);
+        }
+
+        .menu-item-info {
+            padding: 1.2rem;
+        }
+
+        .menu-item-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .menu-item-price {
+            color: #ff6600;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .menu-item-desc {
+            color: #aaa;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        /* ===== FAQ SECTION ===== */
+        .faq-section {
+            background: #0f0f0f;
+            border-radius: 30px;
+            padding: 2rem;
+            margin-top: 1rem;
+        }
+
+        .faq-filters {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .filter-btn {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            padding: 0.6rem 1.5rem;
+            border-radius: 40px;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: #ff6600;
+            color: #000;
+            border-color: #ff6600;
+        }
+
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 1.2rem;
+        }
+
+        .faq-item {
+            background: #111;
+            border-radius: 16px;
+            padding: 1.2rem 1.5rem;
+            border: 1px solid #2a2a2a;
+            transition: all 0.3s;
+        }
+
+        .faq-item:hover {
+            border-color: #ff6600;
+        }
+
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        .faq-question .category-tag {
+            font-size: 0.65rem;
+            background: rgba(255, 102, 0, 0.2);
+            color: #ffaa66;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-weight: normal;
+        }
+
+        .faq-question .toggle-icon {
+            color: #ff6600;
+            font-size: 1.2rem;
+            transition: transform 0.3s;
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            color: #aaa;
+            line-height: 1.6;
+            margin-top: 0;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 200px;
+            margin-top: 1rem;
+        }
+
+        .faq-item.active .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .no-faqs {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+            grid-column: 1 / -1;
+        }
+
+        /* ===== ABOUT US SECTION ===== */
+        .about-section {
+            background: #0f0f0f;
+            border-radius: 30px;
+            padding: 2.5rem;
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        .about-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .about-content p {
+            color: #ccc;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            font-size: 1.05rem;
+        }
+
+        .about-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature {
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature h4 {
+            color: #ff6600;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature p {
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        /* ===== CTA SECTION ===== */
+        .cta-section {
+            background: linear-gradient(135deg, #ff6600, #cc5500);
+            border-radius: 30px;
+            padding: 3rem;
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        .cta-section h3 {
+            font-size: 2rem;
+            color: #000;
+            margin-bottom: 1rem;
+        }
+
+        .cta-section p {
+            color: #1a1a1a;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-btn {
+            background: #000;
+            color: #ff6600;
+            padding: 0.8rem 2rem;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .cta-btn:hover {
+            background: #1a1a1a;
+            transform: translateY(-2px);
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background-color: #000000;
+            text-align: center;
+            padding: 35px 20px;
+            margin-top: 60px;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            color: #888;
+        }
+
+        .admin-link {
+            color: #666;
+            text-decoration: none;
+            font-size: 0.65rem;
+            display: inline-block;
+            margin-top: 8px;
+            transition: color 0.3s;
+        }
+
+        .admin-link:hover {
+            color: #ff6600;
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem 1.5rem;
+                flex-direction: column;
+                gap: 10px;
+            }
+            .nav-links a {
+                margin-left: 1rem;
+                margin-right: 1rem;
+            }
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+            .faq-grid {
+                grid-template-columns: 1fr;
+            }
+            .section-title h2 {
+                font-size: 1.8rem;
+            }
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- STATIC NAVIGATION BAR -->
+    <div class="navbar">
+        <a href="#" class="logo">MAGIC HOTEL</a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="services.html">Services</a>
+            <a href="booking.php">Book Now</a>
+            <a href="contact.html">Contact</a>
+            <a href="login.php">Login</a>
+        </div>
+    </div>
+
+    <!-- FULL WIDTH HERO SECTION -->
+    <div class="hero">
+        <div class="hero-content">
+            <h1>WELCOME TO <span>MAGIC HOTEL</span></h1>
+            <p>Experience luxury, comfort, and unforgettable moments. Your perfect getaway awaits.</p>
+            <a href="booking.php" class="hero-btn">Book Your Stay</a>
+        </div>
+    </div>
+
+    <!-- RECENT POSTS SECTION -->
+    <div class="container">
+        <div class="section-title">
+            <h2>Recent Stories</h2>
+            <div class="divider"></div>
+        </div>
+
+        <div class="posts-grid">
+            <div class="post-card">
+                <div class="post-image">
+                    <img src="https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Luxury Suite">
+                </div>
+                <div class="post-content">
+                    <div class="post-category">Rooms</div>
+                    <h3>Introducing Our New Presidential Suite</h3>
+                    <p>Experience unparalleled luxury with panoramic city views, private butler service, and premium amenities.</p>
+                    <a href="#" class="read-more">Read More →</a>
+                </div>
+            </div>
+            <div class="post-card">
+                <div class="post-image">
+                    <img src="https://images.pexels.com/photos/374071/pexels-photo-374071.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Spa Treatment">
+                </div>
+                <div class="post-content">
+                    <div class="post-category">Spa</div>
+                    <h3>New Signature Massage Treatment</h3>
+                    <p>Relax and rejuvenate with our exclusive aromatherapy massage designed to melt away stress.</p>
+                    <a href="#" class="read-more">Read More →</a>
+                </div>
+            </div>
+            <div class="post-card">
+                <div class="post-image">
+                    <img src="https://images.pexels.com/photos/1267320/pexels-photo-1267320.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Restaurant Dish">
+                </div>
+                <div class="post-content">
+                    <div class="post-category">Restaurant</div>
+                    <h3>Chef's Special: African Fusion Menu</h3>
+                    <p>Discover our new seasonal menu blending local flavors with international cuisine.</p>
+                    <a href="#" class="read-more">Read More →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RESTAURANT MENU SECTION -->
+    <div class="container">
+        <div class="section-title">
+            <h2>Our Restaurant Menu</h2>
+            <div class="divider"></div>
+        </div>
+
+        <div class="menu-section">
+            <!-- Starters -->
+            <div class="menu-category">
+                <h3> STARTERS</h3>
+                <div class="menu-grid">
+                    <div class="menu-item">
+                        <div class="menu-item-image">
+                            <img src="https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Crispy Calamari">
+                        </div>
+                        <div class="menu-item-info">
+                            <div class="menu-item-title">Crispy Calamari</div>
+                            <div class="menu-item-price">UGX 35,000</div>
+                            <div class="menu-item-desc">Lightly battered and fried calamari served with tangy marinara sauce.</div>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-item-image">
+                            <img src="https://images.pexels.com/photos/1583884/pexels-photo-1583884.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Truffle Fries">
+                        </div>
+                        <div class="menu-item-info">
+                            <div class="menu-item-title">Truffle Fries</div>
+                            <div class="menu-item-price">UGX 22,000</div>
+                            <div class="menu-item-desc">Crispy golden fries tossed with truffle oil, parmesan, and herbs.</div>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-item-image">
+                            <img src="https://images.pexels.com/photos/699953/pexels-photo-699953.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Stuffed Mushrooms">
+                        </div>
+                        <div class="menu-item-info">
+                            <div class="menu-item-title">Stuffed Mushrooms</div>
+                            <div class="menu-item-price">UGX 28,000</div>
+                            <div class="menu-item-desc">Mushrooms caps filled with cream cheese, garlic, and herbs.</div>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-item-image">
+                            <img src="https://images.pexels.com/photos/17402671/pexels-photo-17402671.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Roasted Tomato Soup">
+                        </div>
+                        <div class="menu-item-info">
+                            <div class="menu-item-title">Roasted Tomato Soup</div>
+                            <div class="menu-item-price">UGX 25,000</div>
+                            <div class="menu-item-desc">Rich and creamy tomato soup with basil and croutons.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Courses -->
+            <div class="menu-category">
+                <h3> MAIN COURSES</h3>
+                <div class="menu-grid">
+                    <div class="menu-item">
+                        <div class="menu-item-image">
+                            <img src="https://images.pexels.com/photos/46239/salmon-dish-food-meal-46239.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Pan-Seared Salmon">
+                        </div>
+                        <div class="menu-item-info">
+                            <div class="menu-item-title">Pan-Seared Salmon</div>
+                            <div class="menu-item-price">UGX 65,000</div>
+                            <div class="menu-item-desc">Fresh Atlantic salmon with lemon butter sauce and seasonal vegetables.</div>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-item-image">
+                            <img src="https://images.pexels.com/photos/675951/pexels-photo-675951.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Classic Ribeye Steak">
+                        </div>
+                        <div class="menu-item-info">
+                            <div class="menu-item-title">Classic Ribeye Steak</div>
+                            <div class="menu-item-price">UGX 75,000</div>
+                            <div class="menu-item-desc">Juicy ribeye grilled to perfection with rosemary potatoes.</div>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-item-image">
+                            <img src="https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Wild Mushroom Risotto">
+                        </div>
+                        <div class="menu-item-info">
+                            <div class="menu-item-title">Wild Mushroom Risotto</div>
+                            <div class="menu-item-price">UGX 45,000</div>
+                            <div class="menu-item-desc">Creamy Arborio rice with wild mushrooms and truffle oil.</div>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-item-image">
+                            <img src="https://images.pexels.com/photos/2338407/pexels-photo-2338407.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Herb-Roasted Chicken">
+                        </div>
+                        <div class="menu-item-info">
+                            <div class="menu-item-title">Herb-Roasted Chicken</div>
+                            <div class="menu-item-price">UGX 50,000</div>
+                            <div class="menu-item-desc">Oven-roasted chicken with garlic herbs and mashed potatoes.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Desserts -->
+            <div class="menu-category">
+                <h3> DESSERTS</h3>
+                <div class="menu-grid">
+                    <div class="menu-item">
+                        <div class="menu-item-image">
+                            <img src="https://images.pexels.com/photos/18580160/pexels-photo-18580160.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Molten Lava Cake">
+                        </div>
+                        <div class="menu-item-info">
+                            <div class="menu-item-title">Molten Lava Cake</div>
+                            <div class="menu-item-price">UGX 25,000</div>
+                            <div class="menu-item-desc">Warm chocolate cake with a gooey molten center, served with vanilla ice cream.</div>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-item-image">
+                            <img src="https://images.pexels.com/photos/109275/pexels-photo-109275.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Lemon Tart">
+                        </div>
+                        <div class="menu-item-info">
+                            <div class="menu-item-title">Lemon Tart</div>
+                            <div class="menu-item-price">UGX 22,000</div>
+                            <div class="menu-item-desc">Zesty lemon curd in a buttery pastry shell with powdered sugar.</div>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-item-image">
+                            <img src="https://images.pexels.com/photos/28895990/pexels-photo-28895990.jpeg?auto=compress&cs=tinysrgb&w=600" alt="New York Cheesecake">
+                        </div>
+                        <div class="menu-item-info">
+                            <div class="menu-item-title">New York Cheesecake</div>
+                            <div class="menu-item-price">UGX 28,000</div>
+                            <div class="menu-item-desc">Classic creamy cheesecake with berry compote.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ SECTION -->
+    <div class="container">
+        <div class="section-title">
+            <h2>Frequently Asked Questions</h2>
+            <div class="divider"></div>
+        </div>
+
+        <div class="faq-section">
+            <!-- Filter Buttons -->
+            <div class="faq-filters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="rooms">Rooms</button>
+                <button class="filter-btn" data-filter="spa">Spa</button>
+                <button class="filter-btn" data-filter="gym">Gym</button>
+                <button class="filter-btn" data-filter="restaurant">Restaurant</button>
+                <button class="filter-btn" data-filter="bar">Bar</button>
+            </div>
+
+            <!-- FAQ Grid -->
+            <div class="faq-grid" id="faqGrid">
+                <!-- Rooms FAQs -->
+                <div class="faq-item" data-category="rooms">
+                    <div class="faq-question">
+                        <span>What are the check-in and check-out times?</span>
+                        <span class="category-tag">Rooms</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">Check-in is from 2:00 PM, and check-out is by 11:00 AM. Early check-in and late check-out are available upon request, subject to availability.</div>
+                </div>
+
+                <div class="faq-item" data-category="rooms">
+                    <div class="faq-question">
+                        <span>Do you offer room service 24/7?</span>
+                        <span class="category-tag">Rooms</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">Yes, our room service is available 24 hours a day, 7 days a week. Enjoy a wide selection of meals and beverages delivered directly to your room.</div>
+                </div>
+
+                <div class="faq-item" data-category="rooms">
+                    <div class="faq-question">
+                        <span>Can I request an extra bed or crib?</span>
+                        <span class="category-tag">Rooms</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">Absolutely! Extra beds and cribs are available upon request. Please notify us during booking or at check-in.</div>
+                </div>
+
+                <!-- Spa FAQs -->
+                <div class="faq-item" data-category="spa">
+                    <div class="faq-question">
+                        <span>Do I need to book spa treatments in advance?</span>
+                        <span class="category-tag">Spa</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">Yes, we highly recommend booking your spa treatments at least 24 hours in advance to secure your preferred time slot.</div>
+                </div>
+
+                <div class="faq-item" data-category="spa">
+                    <div class="faq-question">
+                        <span>What spa services do you offer?</span>
+                        <span class="category-tag">Spa</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">We offer a wide range of services including Swedish massage, deep tissue massage, facials, body wraps, aromatherapy, and couple's treatments.</div>
+                </div>
+
+                <div class="faq-item" data-category="spa">
+                    <div class="faq-question">
+                        <span>Is there a dress code for the spa?</span>
+                        <span class="category-tag">Spa</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">We provide robes and slippers for all spa guests. You may wear a swimsuit or use our disposable undergarments for treatments.</div>
+                </div>
+
+                <!-- Gym FAQs -->
+                <div class="faq-item" data-category="gym">
+                    <div class="faq-question">
+                        <span>Is the gym open 24 hours?</span>
+                        <span class="category-tag">Gym</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">Yes, our fitness center is open 24/7 for hotel guests. Personal trainers are available during staffed hours from 6 AM to 10 PM.</div>
+                </div>
+
+                <div class="faq-item" data-category="gym">
+                    <div class="faq-question">
+                        <span>Do you have personal trainers available?</span>
+                        <span class="category-tag">Gym</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">Yes, certified personal trainers are available for one-on-one sessions. Book at the front desk or call the gym reception.</div>
+                </div>
+
+                <div class="faq-item" data-category="gym">
+                    <div class="faq-question">
+                        <span>What equipment does the gym have?</span>
+                        <span class="category-tag">Gym</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">Our gym features treadmills, ellipticals, stationary bikes, free weights, resistance machines, and a dedicated yoga/stretching area.</div>
+                </div>
+
+                <!-- Restaurant FAQs -->
+                <div class="faq-item" data-category="restaurant">
+                    <div class="faq-question">
+                        <span>Do you accommodate dietary restrictions?</span>
+                        <span class="category-tag">Restaurant</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">Absolutely! We cater to vegetarian, vegan, gluten-free, halal, and other dietary needs. Please inform our staff of any requirements.</div>
+                </div>
+
+                <div class="faq-item" data-category="restaurant">
+                    <div class="faq-question">
+                        <span>Do I need a reservation for dinner?</span>
+                        <span class="category-tag">Restaurant</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">Reservations are recommended for dinner, especially on weekends. Walk-ins are welcome based on availability.</div>
+                </div>
+
+                <div class="faq-item" data-category="restaurant">
+                    <div class="faq-question">
+                        <span>What are your restaurant hours?</span>
+                        <span class="category-tag">Restaurant</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">Breakfast: 6:30 AM - 10:30 AM | Lunch: 12:00 PM - 3:00 PM | Dinner: 6:00 PM - 11:00 PM</div>
+                </div>
+
+                <!-- Bar FAQs -->
+                <div class="faq-item" data-category="bar">
+                    <div class="faq-question">
+                        <span>What drinks do you serve at the bar?</span>
+                        <span class="category-tag">Bar</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">We offer a wide selection of cocktails, wines, beers, spirits, and non-alcoholic beverages. Our signature cocktail menu changes seasonally.</div>
+                </div>
+
+                <div class="faq-item" data-category="bar">
+                    <div class="faq-question">
+                        <span>Do you have happy hour specials?</span>
+                        <span class="category-tag">Bar</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">Yes! Happy hour is from 5:00 PM to 7:00 PM daily with selected cocktails and beers at special prices.</div>
+                </div>
+
+                <div class="faq-item" data-category="bar">
+                    <div class="faq-question">
+                        <span>Can I host a private event at the bar?</span>
+                        <span class="category-tag">Bar</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">Yes, our bar area can be reserved for private parties and events. Please contact our events team for more information.</div>
+                </div>
+
+                <div class="faq-item" data-category="restaurant">
+                    <div class="faq-question">
+                        <span>Do you serve breakfast buffet?</span>
+                        <span class="category-tag">Restaurant</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">Yes, we offer a lavish breakfast buffet every morning featuring international and local cuisine.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ABOUT US SECTION -->
+    <div class="container">
+        <div class="section-title">
+            <h2>About Us</h2>
+            <div class="divider"></div>
+        </div>
+
+        <div class="about-section">
+            <div class="about-content">
+                <p>Welcome to Magic Hotel, where luxury meets comfort in the heart of the city. Since our founding, we have been dedicated to providing exceptional hospitality and unforgettable experiences to our guests from around the world.</p>
+                <p>Our hotel features elegantly designed rooms, world-class dining options, a rejuvenating spa, state-of-the-art fitness center, and impeccable service that anticipates your every need. Whether you're traveling for business or leisure, Magic Hotel is your perfect home away from home.</p>
+                <p>We take pride in our commitment to excellence, sustainability, and creating magical moments that last a lifetime.</p>
+            </div>
+            <div class="about-features">
+                <div class="feature">
+                    <div class="feature-icon">🏨</div>
+                    <h4>Luxury Rooms</h4>
+                    <p>Elegantly designed with premium amenities</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🍽️</div>
+                    <h4>Fine Dining</h4>
+                    <p>World-class cuisine from expert chefs</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">💆</div>
+                    <h4>Rejuvenation Spa</h4>
+                    <p>Relax and refresh your mind and body</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">💪</div>
+                    <h4>Fitness Center</h4>
+                    <p>State-of-the-art equipment and trainers</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CALL TO ACTION SECTION -->
+    <div class="container">
+        <div class="cta-section">
+            <h3>Ready for a Magical Experience?</h3>
+            <p>Book your stay today and enjoy exclusive offers and unforgettable memories.</p>
+            <a href="booking.php" class="cta-btn">Book Now</a>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div>© 2025 MAGIC HOTEL LTD — Where elegance meets comfort. All rights reserved.</div>
+        <a href="admin_login.php" class="admin-link">Admin Login</a>
+    </footer>
+
+    <script>
+        // FAQ Toggle Functionality
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const faqItem = question.parentElement;
+                faqItem.classList.toggle('active');
+            });
+        });
+
+        // FAQ Filter Functionality
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const faqItems = document.querySelectorAll('.faq-item');
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Update active button
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                const filterValue = button.getAttribute('data-filter');
+
+                // Filter FAQs
+                faqItems.forEach(item => {
+                    if (filterValue === 'all' || item.getAttribute('data-category') === filterValue) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>

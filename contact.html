@@ -1,0 +1,262 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Hotel - Contact Us</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            background-color: #111;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navigation - matches main page style (no lines) */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+            background: black;
+            position: sticky;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .logo {
+            color: orange;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            font-weight: 500;
+        }
+
+        nav div:last-child a {
+            text-decoration: none;
+            color: white;
+            margin-left: 30px;
+            font-weight: 400;
+            transition: all 0.3s;
+            font-size: 1.1rem;
+        }
+
+        nav div:last-child a:hover {
+            color: orange;
+        }
+
+        /* Main Content */
+        main {
+            text-align: center;
+            padding: 60px 20px 80px;
+            flex: 1;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 500;
+            margin-bottom: 60px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: orange;
+            position: relative;
+            display: inline-block;
+        }
+
+        h1:after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 3px;
+            background: orange;
+            margin: 12px auto 0;
+            border-radius: 3px;
+        }
+
+        /* Contact Cards - Orange gradient background with lighter/darker effect */
+        .card {
+            border: none;
+            border-radius: 25px;
+            width: 100%;
+            max-width: 500px;
+            margin: 25px auto;
+            padding: 45px 0;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #e65c00, #ff8c33, #cc5500, #ffa64d);
+            background-size: 200% 200%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: gradientShift 4s ease infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle lighter overlay effect on hover */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        /* Inner lighter glow effect */
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(120deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.1) 100%);
+            pointer-events: none;
+            border-radius: 25px;
+        }
+
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 28px rgba(255,165,0,0.4);
+        }
+
+        .label {
+            font-size: 0.85rem;
+            margin-bottom: 18px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #fff;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 2;
+        }
+
+        .value {
+            font-size: 1.35rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Link styling for clickable contacts */
+        .contact-link {
+            color: #fff;
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-block;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            font-weight: 600;
+        }
+
+        .contact-link:hover {
+            color: #ffffaa;
+            transform: scale(1.02);
+            text-decoration: underline;
+        }
+
+        /* Footer */
+        footer {
+            background-color: black;
+            text-align: center;
+            padding: 35px 20px;
+            margin-top: 50px;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            color: #888;
+        }
+
+        /* Responsive */
+        @media (max-width: 700px) {
+            nav {
+                padding: 15px 25px;
+            }
+            .logo {
+                font-size: 1.4rem;
+            }
+            nav div:last-child a {
+                margin-left: 20px;
+                font-size: 1rem;
+            }
+            h1 {
+                font-size: 2.2rem;
+            }
+            .card {
+                max-width: 90%;
+                padding: 35px 0;
+            }
+            .value {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">Magic Hotel</div>
+        <div>
+            <a href="index.html">Home</a>
+            <a href="services.html">Services</a>
+        </div>
+    </nav>
+
+    <main>
+        <h1>Contact Us</h1>
+
+        <div class="card">
+            <div class="label">Phone Number</div>
+            <div class="value">
+                <a href="https://wa.me/256774070756" class="contact-link" target="_blank">
+                    +256700000234
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="label">Email</div>
+            <div class="value">
+                <a href="mailto:stattide@gmail.com" class="contact-link">
+                    contact@magichotel.com
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        magic hotel ltd
+    </footer>
+
+</body>
+</html>
+```
