@@ -1,257 +1,353 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Host: 127.0.0.1
--- Generation Time: Apr 28, 2026 at 05:14 PM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.0.30
+CREATE DATABASE IF NOT EXISTS magic_hotel
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
 
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
+USE magic_hotel;
 
+CREATE TABLE IF NOT EXISTS users (
+    id INT(11) NOT NULL AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    phone VARCHAR(50) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_login TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_users_email (email),
+    KEY idx_users_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+CREATE TABLE IF NOT EXISTS admins (
+    id INT(11) NOT NULL AUTO_INCREMENT,
+    full_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL DEFAULT 'staff',
+    department VARCHAR(100) DEFAULT NULL,
+    phone VARCHAR(50) DEFAULT NULL,
+    shift_schedule VARCHAR(100) DEFAULT NULL,
+    status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_login TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_admins_email (email),
+    KEY idx_admins_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Database: `magic_hotel`
---
+CREATE TABLE IF NOT EXISTS services (
+    id INT(11) NOT NULL AUTO_INCREMENT,
+    category VARCHAR(50) NOT NULL,
+    menu_section VARCHAR(100) NOT NULL DEFAULT 'General',
+    service_name VARCHAR(255) NOT NULL,
+    description TEXT DEFAULT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    pricing_unit VARCHAR(50) NOT NULL DEFAULT 'item',
+    sort_order INT(11) NOT NULL DEFAULT 0,
+    is_available TINYINT(1) DEFAULT 1,
+    PRIMARY KEY (id),
+    KEY idx_services_category (category),
+    KEY idx_services_availability (is_available)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS bookings (
+    id INT(11) NOT NULL AUTO_INCREMENT,
+    user_id INT(11) NOT NULL,
+    service_name VARCHAR(255) NOT NULL,
+    quantity INT(11) NOT NULL DEFAULT 1,
+    price_per_unit DECIMAL(10,2) NOT NULL,
+    total_price DECIMAL(10,2) NOT NULL,
+    booking_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('pending', 'confirmed', 'cancelled', 'completed') DEFAULT 'pending',
+    payment_status ENUM('unpaid', 'paid', 'refunded') DEFAULT 'unpaid',
+    PRIMARY KEY (id),
+    KEY idx_bookings_user_id (user_id),
+    CONSTRAINT bookings_ibfk_1 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Table structure for table `admins`
---
+CREATE TABLE IF NOT EXISTS feedback (
+    id INT(11) NOT NULL AUTO_INCREMENT,
+    user_id INT(11) NOT NULL,
+    service_category ENUM('rooms', 'spa', 'gym', 'restaurant', 'bar') NOT NULL,
+    service_name VARCHAR(255) NOT NULL,
+    rating INT(11) NOT NULL,
+    comment TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_approved TINYINT(1) DEFAULT 0,
+    PRIMARY KEY (id),
+    KEY idx_feedback_user_id (user_id),
+    KEY idx_feedback_category (service_category),
+    KEY idx_feedback_rating (rating),
+    CONSTRAINT feedback_ibfk_1 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT chk_feedback_rating CHECK (rating >= 1 AND rating <= 5)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `admins` (
-  `id` int(11) NOT NULL,
-  `full_name` varchar(255) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `role` enum('admin','manager','staff') DEFAULT 'staff',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `last_login` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE IF NOT EXISTS hotel_settings (
+    setting_key VARCHAR(100) NOT NULL,
+    setting_value TEXT NOT NULL,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (setting_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `admins`
---
+ALTER TABLE admins MODIFY COLUMN role VARCHAR(50) NOT NULL DEFAULT 'staff';
+ALTER TABLE admins ADD COLUMN IF NOT EXISTS department VARCHAR(100) DEFAULT NULL AFTER role;
+ALTER TABLE admins ADD COLUMN IF NOT EXISTS phone VARCHAR(50) DEFAULT NULL AFTER department;
+ALTER TABLE admins ADD COLUMN IF NOT EXISTS shift_schedule VARCHAR(100) DEFAULT NULL AFTER phone;
+ALTER TABLE admins ADD COLUMN IF NOT EXISTS status ENUM('active', 'inactive') NOT NULL DEFAULT 'active' AFTER shift_schedule;
 
-INSERT INTO `admins` (`id`, `full_name`, `email`, `password`, `role`, `created_at`, `last_login`) VALUES
-(5, 'Super Admin', 'admin@magichotel.com', 'admin123', 'admin', '2026-04-28 10:05:37', NULL),
-(6, 'Hotel Manager', 'manager@magichotel.com', 'manager123', 'manager', '2026-04-28 10:05:37', NULL),
-(7, 'Front Desk Staff', 'staff@magichotel.com', 'staff123', 'staff', '2026-04-28 10:05:37', NULL);
+ALTER TABLE services ADD COLUMN IF NOT EXISTS menu_section VARCHAR(100) NOT NULL DEFAULT 'General' AFTER category;
+ALTER TABLE services ADD COLUMN IF NOT EXISTS pricing_unit VARCHAR(50) NOT NULL DEFAULT 'item' AFTER price;
+ALTER TABLE services ADD COLUMN IF NOT EXISTS sort_order INT(11) NOT NULL DEFAULT 0 AFTER pricing_unit;
 
--- --------------------------------------------------------
+UPDATE admins
+SET role = 'front desk',
+    department = COALESCE(NULLIF(department, ''), 'Front Office'),
+    shift_schedule = COALESCE(NULLIF(shift_schedule, ''), 'Day Shift'),
+    status = COALESCE(status, 'active')
+WHERE email = 'staff@magichotel.com';
 
---
--- Table structure for table `bookings`
---
+UPDATE services
+SET menu_section = 'Accommodation',
+    pricing_unit = 'night',
+    sort_order = CASE service_name
+        WHEN 'Single Room' THEN 10
+        WHEN 'Double Room' THEN 20
+        ELSE sort_order
+    END
+WHERE category = 'rooms';
 
-CREATE TABLE `bookings` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `service_name` varchar(255) NOT NULL,
-  `quantity` int(11) NOT NULL DEFAULT 1,
-  `price_per_unit` decimal(10,2) NOT NULL,
-  `total_price` decimal(10,2) NOT NULL,
-  `booking_date` timestamp NOT NULL DEFAULT current_timestamp(),
-  `status` enum('pending','confirmed','cancelled','completed') DEFAULT 'pending',
-  `payment_status` enum('unpaid','paid','refunded') DEFAULT 'unpaid'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+UPDATE services
+SET menu_section = 'Treatments',
+    pricing_unit = 'session',
+    sort_order = CASE service_name
+        WHEN 'Facial Treatment' THEN 10
+        WHEN 'Massage Therapy' THEN 20
+        WHEN 'Body Treatment' THEN 30
+        WHEN 'Salon Services' THEN 40
+        ELSE sort_order
+    END
+WHERE category = 'spa';
 
---
--- Dumping data for table `bookings`
---
+UPDATE services
+SET menu_section = 'Fitness',
+    pricing_unit = 'session',
+    sort_order = CASE service_name
+        WHEN 'Normal Workout' THEN 10
+        WHEN 'Workout with Trainer' THEN 20
+        ELSE sort_order
+    END
+WHERE category = 'gym';
 
-INSERT INTO `bookings` (`id`, `user_id`, `service_name`, `quantity`, `price_per_unit`, `total_price`, `booking_date`, `status`, `payment_status`) VALUES
-(1, 1, 'Double Room', 2, 200000.00, 400000.00, '2026-04-28 08:51:09', 'confirmed', 'unpaid'),
-(2, 1, 'Massage Therapy', 1, 100000.00, 100000.00, '2026-04-28 08:51:09', 'pending', 'unpaid'),
-(3, 2, 'Single Room', 2, 100000.00, 200000.00, '2026-04-28 11:40:18', 'pending', 'unpaid'),
-(4, 2, 'Facial Treatment', 1, 100000.00, 100000.00, '2026-04-28 12:06:58', 'pending', 'unpaid'),
-(5, 2, 'Facial Treatment', 1, 100000.00, 100000.00, '2026-04-28 12:07:03', 'pending', 'unpaid'),
-(6, 2, 'Normal Workout', 1, 100000.00, 100000.00, '2026-04-28 12:09:36', 'pending', 'unpaid'),
-(7, 2, 'Salon Services', 1, 100000.00, 100000.00, '2026-04-28 12:11:24', 'pending', 'unpaid'),
-(8, 2, 'Facial Treatment', 1, 20000.00, 20000.00, '2026-04-28 12:22:23', 'pending', 'unpaid'),
-(9, 2, 'Salon Services', 1, 50000.00, 50000.00, '2026-04-28 12:26:53', 'pending', 'unpaid'),
-(10, 2, 'Normal Workout', 1, 20000.00, 20000.00, '2026-04-28 12:33:58', 'cancelled', 'unpaid');
+INSERT IGNORE INTO users (name, email, phone, password, created_at)
+VALUES
+    ('Guest Client', 'guest@magichotel.com', '+256700000123', '$2y$10$PLaIVm.YFZRIQ7m.RdAhNOnJegWyNUZ2NOy53FxRygcxJQC786TLy', CURRENT_TIMESTAMP),
+    ('Demo Client', 'client@magichotel.com', '+256774000700', '$2y$10$brWC4UovfnX/IqgbhXX3.e7YD12z/siw.bJFZLFJyxr7N.9pDf7Fm', CURRENT_TIMESTAMP);
 
--- --------------------------------------------------------
+INSERT IGNORE INTO admins (full_name, email, password, role, department, phone, shift_schedule, status, created_at)
+VALUES
+    ('Super Admin', 'admin@magichotel.com', '$2y$10$fMTyT2bDwpwUaL70q87dJefNh1mR.fUIq6crov0ulDwtr0xfXGdta', 'admin', 'Executive', '+256700000001', 'Full Access', 'active', CURRENT_TIMESTAMP),
+    ('Hotel Manager', 'manager@magichotel.com', '$2y$10$j759.3ljkJUhySbGXKddi.wOYrSb26K.sJkt4kTMPYvcTDeUVizBC', 'manager', 'Operations', '+256700000002', 'Day Shift', 'active', CURRENT_TIMESTAMP),
+    ('Front Desk Staff', 'staff@magichotel.com', '$2y$10$5te2p/PlM6h77hJy0iXQeu9i0IY.QIoeE8gQZsiQBCxlUZkn64xqu', 'front desk', 'Front Office', '+256700000003', 'Day Shift', 'active', CURRENT_TIMESTAMP),
+    ('Head Chef', 'chef@magichotel.com', '$2y$10$fMCsxs.FSkFqI7/AF2m/3.Z76ktFa2pUIofzGm2/m9Uif1M0YojSW', 'chef', 'Kitchen', '+256700000004', 'Morning Shift', 'active', CURRENT_TIMESTAMP),
+    ('Bar Supervisor', 'bar@magichotel.com', '$2y$10$9tPz3X4p87j0qahy1P/MsOZxAmIzqVrr2eeiTlpbt.barumYQgn2m', 'bartender', 'Bar', '+256700000005', 'Evening Shift', 'active', CURRENT_TIMESTAMP),
+    ('Housekeeping Lead', 'housekeeping@magichotel.com', '$2y$10$SoUMsRkNMCxrKbKGW0r5FOfOgpLKLih5KR2M5GhqMmyg3k5z8NDSC', 'housekeeping', 'Housekeeping', '+256700000006', 'Day Shift', 'active', CURRENT_TIMESTAMP);
 
---
--- Table structure for table `feedback`
---
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'rooms', 'Accommodation', 'Single Room', 'Comfortable single room with city view and breakfast access.', 100000.00, 'night', 10, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'rooms' AND service_name = 'Single Room'
+);
 
-CREATE TABLE `feedback` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `service_category` enum('rooms','spa','gym','restaurant','bar') NOT NULL,
-  `service_name` varchar(255) NOT NULL,
-  `rating` int(11) NOT NULL CHECK (`rating` >= 1 and `rating` <= 5),
-  `comment` text NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `is_approved` tinyint(1) DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'rooms', 'Accommodation', 'Double Room', 'Spacious double room with premium amenities and workspace.', 200000.00, 'night', 20, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'rooms' AND service_name = 'Double Room'
+);
 
---
--- Dumping data for table `feedback`
---
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'rooms', 'Accommodation', 'Executive Suite', 'Executive suite with lounge space, bathtub, and airport transfer support.', 350000.00, 'night', 30, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'rooms' AND service_name = 'Executive Suite'
+);
 
-INSERT INTO `feedback` (`id`, `user_id`, `service_category`, `service_name`, `rating`, `comment`, `created_at`, `is_approved`) VALUES
-(1, 1, 'rooms', 'Double Room', 5, 'The room was amazing! Very clean and comfortable.', '2026-04-28 08:51:09', 1),
-(2, 1, 'spa', 'Massage Therapy', 4, 'Great massage, very relaxing atmosphere.', '2026-04-28 08:51:09', 1);
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'restaurant', 'Starters', 'Crispy Calamari', 'Lightly battered calamari served with tangy marinara sauce.', 35000.00, 'plate', 110, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'restaurant' AND service_name = 'Crispy Calamari'
+);
 
--- --------------------------------------------------------
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'restaurant', 'Starters', 'Truffle Fries', 'Golden fries finished with truffle oil, parmesan, and herbs.', 22000.00, 'plate', 120, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'restaurant' AND service_name = 'Truffle Fries'
+);
 
---
--- Table structure for table `services`
---
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'restaurant', 'Starters', 'Stuffed Mushrooms', 'Baked mushrooms filled with cream cheese, garlic, and herbs.', 28000.00, 'plate', 130, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'restaurant' AND service_name = 'Stuffed Mushrooms'
+);
 
-CREATE TABLE `services` (
-  `id` int(11) NOT NULL,
-  `category` varchar(50) NOT NULL,
-  `service_name` varchar(255) NOT NULL,
-  `description` text DEFAULT NULL,
-  `price` decimal(10,2) NOT NULL,
-  `is_available` tinyint(1) DEFAULT 1
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'restaurant', 'Starters', 'Roasted Tomato Soup', 'Creamy roasted tomato soup with basil and buttered croutons.', 25000.00, 'bowl', 140, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'restaurant' AND service_name = 'Roasted Tomato Soup'
+);
 
---
--- Dumping data for table `services`
---
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'restaurant', 'Main Courses', 'Pan-Seared Salmon', 'Fresh salmon with lemon butter sauce and seasonal vegetables.', 65000.00, 'plate', 210, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'restaurant' AND service_name = 'Pan-Seared Salmon'
+);
 
-INSERT INTO `services` (`id`, `category`, `service_name`, `description`, `price`, `is_available`) VALUES
-(1, 'rooms', 'Single Room', 'Comfortable single bed room with city view', 100000.00, 1),
-(2, 'rooms', 'Double Room', 'Spacious double room with premium amenities', 200000.00, 1),
-(3, 'spa', 'Facial Treatment', 'Rejuvenating facial with organic products', 20000.00, 1),
-(4, 'spa', 'Massage Therapy', 'Full body relaxation massage', 100000.00, 1),
-(5, 'spa', 'Body Treatment', 'Exfoliating scrub and body wrap', 80000.00, 1),
-(6, 'spa', 'Salon Services', 'Hair styling and nail care', 50000.00, 1),
-(7, 'gym', 'Normal Workout', 'Self-guided gym session', 20000.00, 1),
-(8, 'gym', 'Workout with Trainer', 'Personal training session', 50000.00, 1);
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'restaurant', 'Main Courses', 'Classic Ribeye Steak', 'Juicy ribeye steak with rosemary potatoes and pepper sauce.', 75000.00, 'plate', 220, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'restaurant' AND service_name = 'Classic Ribeye Steak'
+);
 
--- --------------------------------------------------------
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'restaurant', 'Main Courses', 'Wild Mushroom Risotto', 'Creamy arborio rice with mushrooms and a parmesan finish.', 45000.00, 'plate', 230, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'restaurant' AND service_name = 'Wild Mushroom Risotto'
+);
 
---
--- Table structure for table `users`
---
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'restaurant', 'Main Courses', 'Herb-Roasted Chicken', 'Roasted chicken with garlic herbs and buttery mash.', 50000.00, 'plate', 240, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'restaurant' AND service_name = 'Herb-Roasted Chicken'
+);
 
-CREATE TABLE `users` (
-  `id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `phone` varchar(50) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `last_login` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'restaurant', 'Desserts', 'Molten Lava Cake', 'Warm chocolate cake with a molten centre and vanilla cream.', 25000.00, 'plate', 310, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'restaurant' AND service_name = 'Molten Lava Cake'
+);
 
---
--- Dumping data for table `users`
---
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'restaurant', 'Desserts', 'Lemon Tart', 'Zesty lemon tart in a buttery pastry shell.', 22000.00, 'slice', 320, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'restaurant' AND service_name = 'Lemon Tart'
+);
 
-INSERT INTO `users` (`id`, `name`, `email`, `phone`, `password`, `created_at`, `last_login`) VALUES
-(1, 'Test User', 'test@example.com', '256700000123', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '2026-04-28 08:51:09', NULL),
-(2, 'enos iragaba', 'enos@magichotel.com', '0774000700', '$2y$10$ZER4E8POKyoTxHSFHf7y2./BIcUbVeC/ZlgV56.AJ4BjNjVWmkkk6', '2026-04-28 11:40:17', '2026-04-28 12:35:46');
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'restaurant', 'Desserts', 'New York Cheesecake', 'Classic creamy cheesecake served with berry compote.', 28000.00, 'slice', 330, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'restaurant' AND service_name = 'New York Cheesecake'
+);
 
---
--- Indexes for dumped tables
---
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'bar', 'Signature Cocktails', 'Classic Mojito', 'Fresh mint, lime, and house white rum.', 25000.00, 'glass', 410, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'bar' AND service_name = 'Classic Mojito'
+);
 
---
--- Indexes for table `admins`
---
-ALTER TABLE `admins`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `email` (`email`),
-  ADD KEY `idx_email` (`email`);
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'bar', 'Signature Cocktails', 'Old Fashioned', 'Bourbon, bitters, citrus zest, and cane syrup.', 30000.00, 'glass', 420, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'bar' AND service_name = 'Old Fashioned'
+);
 
---
--- Indexes for table `bookings`
---
-ALTER TABLE `bookings`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_user_id` (`user_id`);
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'bar', 'Wines', 'House Red Wine', 'Smooth dry red poured by the glass.', 28000.00, 'glass', 510, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'bar' AND service_name = 'House Red Wine'
+);
 
---
--- Indexes for table `feedback`
---
-ALTER TABLE `feedback`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_user_id` (`user_id`),
-  ADD KEY `idx_service` (`service_category`),
-  ADD KEY `idx_rating` (`rating`);
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'bar', 'Wines', 'Sauvignon Blanc', 'Crisp white wine with tropical fruit notes.', 32000.00, 'glass', 520, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'bar' AND service_name = 'Sauvignon Blanc'
+);
 
---
--- Indexes for table `services`
---
-ALTER TABLE `services`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_category` (`category`);
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'bar', 'Soft Drinks', 'Tropical Punch', 'House tropical punch served chilled.', 18000.00, 'glass', 610, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'bar' AND service_name = 'Tropical Punch'
+);
 
---
--- Indexes for table `users`
---
-ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `email` (`email`),
-  ADD KEY `idx_email` (`email`);
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'bar', 'Soft Drinks', 'Fresh Passion Juice', 'Freshly blended passion juice with no artificial syrups.', 12000.00, 'glass', 620, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'bar' AND service_name = 'Fresh Passion Juice'
+);
 
---
--- AUTO_INCREMENT for dumped tables
---
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'bar', 'Coffee & Tea', 'Espresso', 'Double-shot espresso for a quick energy lift.', 9000.00, 'cup', 710, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'bar' AND service_name = 'Espresso'
+);
 
---
--- AUTO_INCREMENT for table `admins`
---
-ALTER TABLE `admins`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'spa', 'Treatments', 'Facial Treatment', 'Rejuvenating facial with organic skincare products.', 20000.00, 'session', 810, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'spa' AND service_name = 'Facial Treatment'
+);
 
---
--- AUTO_INCREMENT for table `bookings`
---
-ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'spa', 'Treatments', 'Massage Therapy', 'Full-body massage designed to release stress and tension.', 100000.00, 'session', 820, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'spa' AND service_name = 'Massage Therapy'
+);
 
---
--- AUTO_INCREMENT for table `feedback`
---
-ALTER TABLE `feedback`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'spa', 'Treatments', 'Body Treatment', 'Exfoliating scrub and body wrap for skin renewal.', 80000.00, 'session', 830, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'spa' AND service_name = 'Body Treatment'
+);
 
---
--- AUTO_INCREMENT for table `services`
---
-ALTER TABLE `services`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'spa', 'Treatments', 'Salon Services', 'Hair styling, grooming, and nail care support.', 50000.00, 'session', 840, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'spa' AND service_name = 'Salon Services'
+);
 
---
--- AUTO_INCREMENT for table `users`
---
-ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'gym', 'Fitness', 'Normal Workout', 'Self-guided gym access with locker support.', 20000.00, 'session', 910, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'gym' AND service_name = 'Normal Workout'
+);
 
---
--- Constraints for dumped tables
---
+INSERT INTO services (category, menu_section, service_name, description, price, pricing_unit, sort_order, is_available)
+SELECT 'gym', 'Fitness', 'Workout with Trainer', 'One-on-one session with a personal trainer.', 50000.00, 'session', 920, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM services WHERE category = 'gym' AND service_name = 'Workout with Trainer'
+);
 
---
--- Constraints for table `bookings`
---
-ALTER TABLE `bookings`
-  ADD CONSTRAINT `bookings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+INSERT INTO hotel_settings (setting_key, setting_value)
+VALUES
+    ('hotel_name', 'Magic Hotel'),
+    ('tagline', 'Where elegance meets comfort.'),
+    ('primary_phone', '+256 700 000 234'),
+    ('secondary_phone', '+256 774 070 756'),
+    ('whatsapp_number', '256774070756'),
+    ('email', 'contact@magichotel.com'),
+    ('reservation_email', 'reservations@magichotel.com'),
+    ('address', 'Plot 12, Sunset Avenue, Kampala, Uganda'),
+    ('front_desk_hours', 'Open 24/7'),
+    ('restaurant_hours', '6:30 AM - 11:00 PM'),
+    ('bar_hours', '4:00 PM - 1:00 AM')
+ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value);
 
---
--- Constraints for table `feedback`
---
-ALTER TABLE `feedback`
-  ADD CONSTRAINT `feedback_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
-COMMIT;
+INSERT INTO bookings (user_id, service_name, quantity, price_per_unit, total_price, booking_date, status, payment_status)
+SELECT u.id, 'Double Room', 2, 200000.00, 400000.00, CURRENT_TIMESTAMP, 'confirmed', 'paid'
+FROM users u
+WHERE u.email = 'guest@magichotel.com'
+  AND NOT EXISTS (SELECT 1 FROM bookings LIMIT 1);
 
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+INSERT INTO bookings (user_id, service_name, quantity, price_per_unit, total_price, booking_date, status, payment_status)
+SELECT u.id, 'Classic Mojito', 2, 25000.00, 50000.00, CURRENT_TIMESTAMP, 'pending', 'unpaid'
+FROM users u
+WHERE u.email = 'client@magichotel.com'
+  AND NOT EXISTS (SELECT 1 FROM bookings WHERE service_name = 'Classic Mojito');
+
+INSERT INTO feedback (user_id, service_category, service_name, rating, comment, created_at, is_approved)
+SELECT u.id, 'rooms', 'Double Room', 5, 'The room was clean, comfortable, and worth the stay.', CURRENT_TIMESTAMP, 1
+FROM users u
+WHERE u.email = 'guest@magichotel.com'
+  AND NOT EXISTS (SELECT 1 FROM feedback LIMIT 1);
+
+INSERT INTO feedback (user_id, service_category, service_name, rating, comment, created_at, is_approved)
+SELECT u.id, 'restaurant', 'Pan-Seared Salmon', 4, 'The restaurant menu was impressive and the service was quick.', CURRENT_TIMESTAMP, 1
+FROM users u
+WHERE u.email = 'client@magichotel.com'
+  AND NOT EXISTS (SELECT 1 FROM feedback WHERE service_name = 'Pan-Seared Salmon');

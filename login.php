@@ -378,8 +378,8 @@ $remembered_email = isset($_COOKIE['remember_email']) ? $_COOKIE['remember_email
     <a href="index.html" class="logo">MAGIC HOTEL</a>
     <div class="nav-links">
         <a href="index.html">Home</a>
-        <a href="services.html">Services</a>
-        <a href="contact.html">Contact</a>
+        <a href="services.php">Services</a>
+        <a href="contact.php">Contact</a>
         
     </div>
 </div>

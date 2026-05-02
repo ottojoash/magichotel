@@ -1,47 +1,65 @@
 <?php
-// admin_login.php - MODIFIED FOR PLAIN TEXT PASSWORDS (DEVELOPMENT ONLY)
+
 session_start();
 require_once 'config.php';
 
-$error = "";
+if (isset($_SESSION['admin_id'])) {
+    header('Location: admin_dashboard.php');
+    exit();
+}
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
-    $email = trim($_POST['email']);
-    $password = $_POST['password']; // This is plain text
-    
-    if (empty($email) || empty($password)) {
-        $error = "Please enter both email and password.";
+$error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
+    $email = trim((string) ($_POST['email'] ?? ''));
+    $password = (string) ($_POST['password'] ?? '');
+
+    if ($email === '' || $password === '') {
+        $error = 'Please enter both email and password.';
     } else {
-        // Query admin from database
-        $sql = "SELECT * FROM admins WHERE email = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("s", $email);
+        $stmt = $conn->prepare("SELECT * FROM admins WHERE email = ? LIMIT 1");
+        $stmt->bind_param('s', $email);
         $stmt->execute();
         $result = $stmt->get_result();
-        
-        if ($result->num_rows === 1) {
-            $admin = $result->fetch_assoc();
-            
-            // DIRECT COMPARISON - NO HASHING (NOT SECURE!)
-            if ($password === $admin['password']) {
-                $_SESSION['admin_id'] = $admin['id'];
+        $admin = $result->fetch_assoc();
+        $stmt->close();
+
+        if (!$admin) {
+            $error = 'No staff account was found with that email address.';
+        } elseif (($admin['status'] ?? 'active') !== 'active') {
+            $error = 'This staff account is inactive. Contact the system administrator.';
+        } else {
+            $storedPassword = (string) $admin['password'];
+            $passwordMatches = password_verify($password, $storedPassword) || hash_equals($storedPassword, $password);
+
+            if ($passwordMatches) {
+                if (!password_get_info($storedPassword)['algo']) {
+                    $newHash = password_hash($password, PASSWORD_DEFAULT);
+                    $upgradeStmt = $conn->prepare("UPDATE admins SET password = ? WHERE id = ?");
+                    $upgradeStmt->bind_param('si', $newHash, $admin['id']);
+                    $upgradeStmt->execute();
+                    $upgradeStmt->close();
+                }
+
+                $_SESSION['admin_id'] = (int) $admin['id'];
                 $_SESSION['admin_name'] = $admin['full_name'];
                 $_SESSION['admin_email'] = $admin['email'];
                 $_SESSION['admin_role'] = $admin['role'];
-                
-                header("Location: admin_dashboard.php");
+
+                $updateStmt = $conn->prepare("UPDATE admins SET last_login = NOW() WHERE id = ?");
+                $updateStmt->bind_param('i', $admin['id']);
+                $updateStmt->execute();
+                $updateStmt->close();
+
+                header('Location: admin_dashboard.php');
                 exit();
-            } else {
-                $error = "Invalid email or password.";
             }
-        } else {
-            $error = "No admin account found with this email.";
+
+            $error = 'Invalid email or password.';
         }
-        $stmt->close();
     }
 }
 ?>
-<!-- Rest of your login page HTML remains the same -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -50,133 +68,178 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
     <title>Admin Login - Magic Hotel</title>
     <style>
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
+
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
             min-height: 100vh;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background:
+                radial-gradient(circle at top, rgba(255, 102, 0, 0.14), transparent 30%),
+                linear-gradient(160deg, #060606, #141414 55%, #1d1d1d);
+            color: #f4f4f4;
             display: flex;
-            justify-content: center;
             align-items: center;
-            padding: 20px;
+            justify-content: center;
+            padding: 24px;
         }
-        .login-container {
-            max-width: 450px;
-            width: 100%;
+
+        .login-shell {
+            width: min(460px, 100%);
         }
+
         .login-card {
-            background: #111;
+            background: rgba(10, 10, 10, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 28px;
-            padding: 2.5rem;
-            border: 1px solid #2a2a2a;
-            text-align: center;
+            padding: 36px;
+            box-shadow: 0 28px 60px rgba(0, 0, 0, 0.35);
         }
-        .login-card h1 {
-            color: #ff6600;
+
+        .eyebrow {
+            display: inline-flex;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(255, 102, 0, 0.12);
+            color: #ffb27d;
+            font-size: 0.82rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+        }
+
+        h1 {
             font-size: 2rem;
-            margin-bottom: 0.5rem;
+            color: #ff7a1a;
+            margin-bottom: 10px;
         }
-        .login-card p {
-            color: #888;
-            margin-bottom: 2rem;
+
+        p {
+            color: #bdbdbd;
+            line-height: 1.6;
+            margin-bottom: 26px;
         }
-        .admin-badge {
-            background: rgba(255,102,0,0.2);
-            color: #ffaa66;
-            padding: 0.3rem 1rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            display: inline-block;
-            margin-bottom: 1rem;
+
+        .alert {
+            margin-bottom: 18px;
+            padding: 14px 16px;
+            border-left: 4px solid #e04d4d;
+            border-radius: 14px;
+            background: rgba(224, 77, 77, 0.12);
+            color: #ffb7b7;
         }
-        .input-group {
-            margin-bottom: 1rem;
-            text-align: left;
-        }
-        .input-group label {
+
+        label {
             display: block;
-            margin-bottom: 0.5rem;
-            color: #ccc;
-            font-size: 0.85rem;
+            margin-bottom: 8px;
+            color: #d7d7d7;
+            font-size: 0.92rem;
         }
-        .input-group input {
+
+        .field {
+            margin-bottom: 16px;
+        }
+
+        input {
             width: 100%;
-            padding: 0.8rem 1rem;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 30px;
-            color: white;
+            padding: 14px 16px;
+            border-radius: 16px;
+            border: 1px solid #2f2f2f;
+            background: #101010;
+            color: #f5f5f5;
             font-size: 1rem;
         }
-        .input-group input:focus {
+
+        input:focus {
             outline: none;
-            border-color: #ff6600;
+            border-color: #ff7a1a;
+            box-shadow: 0 0 0 3px rgba(255, 122, 26, 0.18);
         }
-        .btn {
-            background: #ff6600;
-            color: black;
+
+        .button {
             width: 100%;
-            padding: 0.8rem;
             border: none;
-            border-radius: 30px;
-            font-weight: bold;
+            border-radius: 18px;
+            padding: 14px 16px;
+            background: linear-gradient(135deg, #ff7a1a, #ff9d52);
+            color: #171717;
             font-size: 1rem;
+            font-weight: 700;
             cursor: pointer;
-            margin-top: 1rem;
-            transition: all 0.3s;
+            margin-top: 10px;
         }
-        .btn:hover {
-            background: #ff8833;
-            transform: translateY(-2px);
+
+        .button:hover {
+            filter: brightness(1.05);
         }
-        .alert-error {
-            background: rgba(220,53,69,0.15);
-            border-left: 4px solid #dc3545;
-            padding: 0.8rem;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-            color: #ff8888;
-            text-align: center;
+
+        .help {
+            margin-top: 22px;
+            font-size: 0.92rem;
+            color: #bdbdbd;
         }
-        .back-link {
-            display: block;
-            margin-top: 1rem;
-            color: #666;
+
+        .help a {
+            color: #ffb27d;
             text-decoration: none;
-            font-size: 0.8rem;
         }
-        .back-link:hover {
-            color: #ff6600;
+
+        .demo-box {
+            margin-top: 24px;
+            padding: 18px;
+            border-radius: 18px;
+            background: #111111;
+            border: 1px solid #242424;
+        }
+
+        .demo-box strong {
+            color: #ffcfaa;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .demo-box code {
+            color: #ffffff;
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
+    <div class="login-shell">
         <div class="login-card">
-            <h1>🔐 ADMIN</h1>
-            <div class="admin-badge">Restricted Access</div>
-            <p>Enter your credentials to access the dashboard</p>
-            
-            <?php if (!empty($error)): ?>
-                <div class="alert-error"><?php echo htmlspecialchars($error); ?></div>
+            <div class="eyebrow">Management Access</div>
+            <h1>Magic Hotel Admin</h1>
+            <p>Sign in to manage bookings, staff, restaurant and bar items, contact details, and guest feedback.</p>
+
+            <?php if ($error !== ''): ?>
+                <div class="alert"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
-            
+
             <form method="POST">
-                <div class="input-group">
-                    <label>Email Address</label>
-                    <input type="email" name="email" placeholder="admin@magichotel.com" required autofocus>
+                <div class="field">
+                    <label for="email">Email Address</label>
+                    <input id="email" type="email" name="email" placeholder="admin@magichotel.com" required autofocus>
                 </div>
-                <div class="input-group">
-                    <label>Password</label>
-                    <input type="password" name="password" placeholder="Enter your password" required>
+
+                <div class="field">
+                    <label for="password">Password</label>
+                    <input id="password" type="password" name="password" placeholder="Enter your password" required>
                 </div>
-                <button type="submit" name="login" class="btn">Login as Admin</button>
+
+                <button class="button" type="submit" name="login">Log In</button>
             </form>
-            <a href="index.html" class="back-link">← Back to Website</a>
+
+            <div class="demo-box">
+                <strong>Default admin account</strong>
+                <div><code>admin@magichotel.com</code> / <code>admin123</code></div>
+            </div>
+
+            <div class="help">
+                <a href="index.html">Back to website</a>
+            </div>
         </div>
     </div>
 </body>
 </html>
+

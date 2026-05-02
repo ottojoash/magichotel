@@ -1,0 +1,55 @@
+[Sat May  2 19:25:06 2026] PHP 8.2.4 Development Server (http://127.0.0.1:8090) started
+[Sat May  2 19:25:36 2026] 127.0.0.1:50217 Accepted
+[Sat May  2 19:25:36 2026] 127.0.0.1:50217 [200]: GET /
+[Sat May  2 19:25:36 2026] 127.0.0.1:50217 Closing
+[Sat May  2 19:25:36 2026] 127.0.0.1:50218 Accepted
+[Sat May  2 19:25:36 2026] 127.0.0.1:50218 [200]: GET /admin_login.php
+[Sat May  2 19:25:36 2026] 127.0.0.1:50218 Closing
+[Sat May  2 19:25:36 2026] 127.0.0.1:50220 Accepted
+[Sat May  2 19:25:36 2026] 127.0.0.1:50220 [200]: GET /contact.php
+[Sat May  2 19:25:36 2026] 127.0.0.1:50220 Closing
+[Sat May  2 19:25:51 2026] 127.0.0.1:50985 Accepted
+[Sat May  2 19:25:51 2026] 127.0.0.1:50986 Accepted
+[Sat May  2 19:25:51 2026] 127.0.0.1:50985 [302]: POST /admin_login.php
+[Sat May  2 19:25:51 2026] 127.0.0.1:50985 Closing
+[Sat May  2 19:25:51 2026] 127.0.0.1:50986 [302]: POST /admin_login.php
+[Sat May  2 19:25:51 2026] 127.0.0.1:50986 Closing
+[Sat May  2 19:25:52 2026] 127.0.0.1:50991 Accepted
+[Sat May  2 19:25:52 2026] 127.0.0.1:50991 [200]: GET /admin_dashboard.php
+[Sat May  2 19:25:52 2026] 127.0.0.1:50991 Closing
+[Sat May  2 19:26:00 2026] 127.0.0.1:51040 Accepted
+[Sat May  2 19:26:00 2026] 127.0.0.1:51040 [302]: POST /admin_login.php
+[Sat May  2 19:26:00 2026] 127.0.0.1:51040 Closing
+[Sat May  2 19:26:32 2026] 127.0.0.1:59831 Accepted
+[Sat May  2 19:26:32 2026] 127.0.0.1:59831 [200]: GET /
+[Sat May  2 19:26:32 2026] 127.0.0.1:59831 Closing
+[Sat May  2 19:26:32 2026] 127.0.0.1:50214 Accepted
+[Sat May  2 19:26:32 2026] 127.0.0.1:59004 Accepted
+[Sat May  2 19:26:33 2026] 127.0.0.1:50214 [404]: GET /favicon.ico - No such file or directory
+[Sat May  2 19:26:33 2026] 127.0.0.1:50214 Closing
+[Sat May  2 19:27:02 2026] 127.0.0.1:59004 [200]: GET /login.php
+[Sat May  2 19:27:02 2026] 127.0.0.1:59004 Closing
+[Sat May  2 19:27:02 2026] 127.0.0.1:55851 Accepted
+[Sat May  2 19:27:36 2026] 127.0.0.1:55851 [302]: POST /login.php
+[Sat May  2 19:27:37 2026] 127.0.0.1:55851 Closing
+[Sat May  2 19:27:37 2026] 127.0.0.1:54582 Accepted
+[Sat May  2 19:27:37 2026] 127.0.0.1:54582 [200]: GET /client_dashboard.php
+[Sat May  2 19:27:37 2026] 127.0.0.1:54582 Closing
+[Sat May  2 19:27:47 2026] 127.0.0.1:56024 Accepted
+[Sat May  2 19:27:47 2026] 127.0.0.1:56024 [302]: GET /client_dashboard.php?logout=1
+[Sat May  2 19:27:47 2026] 127.0.0.1:56024 Closing
+[Sat May  2 19:27:47 2026] 127.0.0.1:51577 Accepted
+[Sat May  2 19:27:47 2026] 127.0.0.1:51577 [200]: GET /login.php
+[Sat May  2 19:27:47 2026] 127.0.0.1:51577 Closing
+[Sat May  2 19:27:48 2026] 127.0.0.1:50484 Accepted
+[Sat May  2 19:27:48 2026] 127.0.0.1:50484 [200]: GET /index.html
+[Sat May  2 19:27:48 2026] 127.0.0.1:50484 Closing
+[Sat May  2 19:27:49 2026] 127.0.0.1:63099 Accepted
+[Sat May  2 19:27:49 2026] 127.0.0.1:64326 Accepted
+[Sat May  2 19:27:55 2026] 127.0.0.1:63099 [200]: GET /admin_login.php
+[Sat May  2 19:27:55 2026] 127.0.0.1:63099 Closing
+[Sat May  2 19:28:24 2026] 127.0.0.1:64326 [302]: POST /admin_login.php
+[Sat May  2 19:28:24 2026] 127.0.0.1:64326 Closing
+[Sat May  2 19:28:24 2026] 127.0.0.1:49672 Accepted
+[Sat May  2 19:28:24 2026] 127.0.0.1:49672 [200]: GET /admin_dashboard.php
+[Sat May  2 19:28:24 2026] 127.0.0.1:49672 Closing

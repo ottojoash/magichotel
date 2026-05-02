@@ -1,484 +1,485 @@
-
 <?php
-// feedback.php - Magic Hotel Feedback System
+
 session_start();
+require_once 'config.php';
+require_once 'hotel_helpers.php';
 
-// Database configuration (optional - for future implementation)
-// define('DB_HOST', 'localhost');
-// define('DB_USER', 'root');
-// define('DB_PASS', '');
-// define('DB_NAME', 'magic_hotel');
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit();
+}
 
-// Services array
-$services = [
-    'rooms' => 'Rooms',
-    'spa' => 'Spa',
-    'gym' => 'Gym',
-    'restaurant' => 'Restaurant',
-    'bar' => 'Bar'
-];
+$userId = (int) $_SESSION['user_id'];
+$userName = $_SESSION['user_name'];
+$message = '';
+$error = '';
+$catalog = getServiceCatalog($conn, false);
+$categoryMeta = getCategoryMeta();
+$settings = getHotelSettings($conn);
 
-// Initialize variables
-$message = "";
-$error = "";
-$selected_service = "";
-$selected_rating = 0;
-$user_comment = "";
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
+    $serviceId = (int) ($_POST['service_id'] ?? 0);
+    $rating = (int) ($_POST['rating'] ?? 0);
+    $comment = trim((string) ($_POST['comment'] ?? ''));
+    $services = getServiceIndexById($conn, [$serviceId], false);
+    $service = $services[$serviceId] ?? null;
 
-// Handle form submission
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (isset($_POST['submit_feedback'])) {
-        $selected_service = isset($_POST['service']) ? trim($_POST['service']) : '';
-        $selected_rating = isset($_POST['rating']) ? intval($_POST['rating']) : 0;
-        $user_comment = isset($_POST['comment']) ? trim($_POST['comment']) : '';
-        
-        // Validation
-        if (empty($selected_service)) {
-            $error = "Please select a service to review.";
-        } elseif ($selected_rating < 1 || $selected_rating > 5) {
-            $error = "Please select a star rating (1-5).";
-        } elseif (empty($user_comment)) {
-            $error = "Please write your feedback comment.";
-        } elseif (strlen($user_comment) < 5) {
-            $error = "Please provide more detailed feedback (at least 5 characters).";
+    if (!$service) {
+        $error = 'Please choose a valid service before submitting feedback.';
+    } elseif ($rating < 1 || $rating > 5) {
+        $error = 'Please choose a rating from 1 to 5.';
+    } elseif (mb_strlen($comment) < 5) {
+        $error = 'Please write at least a short comment before submitting.';
+    } else {
+        $stmt = $conn->prepare("
+            INSERT INTO feedback (user_id, service_category, service_name, rating, comment, is_approved)
+            VALUES (?, ?, ?, ?, ?, 0)
+        ");
+        $stmt->bind_param('issis', $userId, $service['category'], $service['service_name'], $rating, $comment);
+
+        if ($stmt->execute()) {
+            $message = 'Thanks for sharing your feedback. Our team will review it before publishing.';
         } else {
-            // In a real application, you would save to database here
-            // For demonstration, we'll store in session and display success
-            
-            // Save feedback to session array (simulating database)
-            if (!isset($_SESSION['feedbacks'])) {
-                $_SESSION['feedbacks'] = [];
-            }
-            
-            $feedback_data = [
-                'service' => $selected_service,
-                'service_name' => $services[$selected_service],
-                'rating' => $selected_rating,
-                'comment' => htmlspecialchars($user_comment),
-                'date' => date('Y-m-d H:i:s'),
-                'ip' => $_SERVER['REMOTE_ADDR']
-            ];
-            
-            array_unshift($_SESSION['feedbacks'], $feedback_data);
-            
-            // Keep only last 50 feedbacks
-            if (count($_SESSION['feedbacks']) > 50) {
-                array_pop($_SESSION['feedbacks']);
-            }
-            
-            $message = "Thank you for your valuable feedback on " . $services[$selected_service] . "! Your rating: " . $selected_rating . "/5 stars.";
-            
-            // Clear form after successful submission
-            $selected_service = "";
-            $selected_rating = 0;
-            $user_comment = "";
+            $error = 'We could not save your feedback right now. Please try again.';
         }
-    }
-    
-    // Handle delete feedback (admin feature)
-    if (isset($_POST['delete_feedback']) && isset($_POST['delete_index'])) {
-        $delete_index = intval($_POST['delete_index']);
-        if (isset($_SESSION['feedbacks'][$delete_index])) {
-            array_splice($_SESSION['feedbacks'], $delete_index, 1);
-            $message = "Feedback has been removed.";
-        }
-    }
-    
-    // Clear all feedbacks
-    if (isset($_POST['clear_all'])) {
-        $_SESSION['feedbacks'] = [];
-        $message = "All feedback has been cleared.";
+
+        $stmt->close();
     }
 }
 
-// Get recent feedbacks for display
-$recent_feedbacks = isset($_SESSION['feedbacks']) ? $_SESSION['feedbacks'] : [];
+$feedbackStmt = $conn->prepare("
+    SELECT service_category, service_name, rating, comment, created_at, is_approved
+    FROM feedback
+    WHERE user_id = ?
+    ORDER BY created_at DESC
+    LIMIT 10
+");
+$feedbackStmt->bind_param('i', $userId);
+$feedbackStmt->execute();
+$feedbackResult = $feedbackStmt->get_result();
+$recentFeedback = $feedbackResult->fetch_all(MYSQLI_ASSOC);
+$feedbackStmt->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Magic Hotel - Customer Feedback</title>
+    <title>Guest Feedback - Magic Hotel</title>
     <style>
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
 
         body {
-            margin: 0;
-            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
-            background-color: #0a0a0a;
-            color: #e0e0e0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background:
+                radial-gradient(circle at top, rgba(255, 122, 26, 0.14), transparent 28%),
+                linear-gradient(180deg, #060606, #0d0d0d 40%, #151515);
+            color: #f5f5f5;
         }
 
-        /* ===== STATIC NAVIGATION BAR ===== */
         .navbar {
             position: sticky;
             top: 0;
-            width: 100%;
-            background: #000000;
-            padding: 1.2rem 3rem;
+            z-index: 10;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 1000;
+            gap: 16px;
+            padding: 18px 28px;
+            background: rgba(4, 4, 4, 0.96);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .logo {
-            font-size: 1.9rem;
+            color: #ff7a1a;
+            text-decoration: none;
+            font-size: 1.45rem;
             font-weight: 700;
-            letter-spacing: 2px;
-            color: #ff6600;
-            text-transform: uppercase;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
         }
 
         .nav-links a {
-            color: #f0f0f0;
+            color: #e8e8e8;
             text-decoration: none;
-            margin-left: 2.2rem;
-            font-size: 1rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s;
         }
 
         .nav-links a:hover {
-            color: #ff6600;
+            color: #ffb27d;
         }
 
-        /* ===== HERO SECTION - Expanded Height ===== */
-        .hero-feedback {
-            width: 100%;
-            height: 75vh;
-            min-height: 500px;
-            background: linear-gradient(135deg, rgba(0,0,0,0.85), rgba(255,102,0,0.25)), url('https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg?auto=compress&cs=tinysrgb&w=1600');
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .hero-overlay {
-            text-align: center;
-            padding: 2rem;
-            background: rgba(0,0,0,0.6);
-            border-radius: 20px;
-            border-left: 5px solid #ff6600;
-            border-right: 5px solid #ff6600;
-        }
-
-        .hero-overlay h1 {
-            font-size: 3.5rem;
-            font-weight: 700;
-            letter-spacing: 4px;
-            color: white;
-            text-transform: uppercase;
-            margin-bottom: 1rem;
-        }
-
-        .hero-overlay h1 span {
-            color: #ff6600;
-        }
-
-        .hero-overlay p {
-            font-size: 1.1rem;
-            color: #ddd;
-        }
-
-        /* ===== MESSAGE ALERTS ===== */
-        .message-container {
-            max-width: 900px;
-            margin: 2rem auto 0;
-            padding: 0 1rem;
-        }
-        .alert-success {
-            background: rgba(255, 102, 0, 0.2);
-            border-left: 5px solid #ff6600;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            color: #ffaa66;
-            text-align: center;
-            font-weight: 500;
-        }
-        .alert-error {
-            background: rgba(220, 53, 69, 0.2);
-            border-left: 5px solid #dc3545;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            color: #ff8888;
-            text-align: center;
-        }
-
-        /* ===== MAIN CONTENT ===== */
-        main {
-            padding: 50px 20px;
-            max-width: 800px;
+        .wrap {
+            width: min(1080px, 100%);
             margin: 0 auto;
+            padding: 48px 20px 60px;
         }
 
-        /* Center the form */
-        .feedback-form-col {
-            width: 100%;
-            max-width: 700px;
-            margin: 0 auto;
-        }
-
-        /* ===== FEEDBACK FORM - Orange Background ===== */
-        .form-container {
-            background: #ff6600;
+        .hero {
+            margin-bottom: 24px;
+            padding: 30px;
             border-radius: 28px;
-            padding: 2rem;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            background:
+                linear-gradient(135deg, rgba(255, 122, 26, 0.14), rgba(255, 122, 26, 0.02)),
+                rgba(10, 10, 10, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .form-container h2 {
-            color: #000000;
-            font-size: 1.8rem;
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+        .hero h1 {
+            color: #ff7a1a;
+            margin-bottom: 10px;
+            font-size: clamp(2rem, 3vw, 3rem);
         }
 
-        .form-container p {
-            color: #1a1a1a;
-            margin-bottom: 1.8rem;
-            font-size: 0.9rem;
+        .hero p {
+            color: #cccccc;
+            line-height: 1.7;
+            max-width: 760px;
         }
 
-        .input-group {
-            margin-bottom: 1.5rem;
-            text-align: left;
+        .layout {
+            display: grid;
+            grid-template-columns: 0.95fr 1.05fr;
+            gap: 24px;
+            align-items: start;
         }
 
-        .input-group label {
+        .panel {
+            padding: 28px;
+            border-radius: 28px;
+            background: rgba(10, 10, 10, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 24px 58px rgba(0, 0, 0, 0.24);
+        }
+
+        .panel h2 {
+            color: #ffcfaa;
+            margin-bottom: 10px;
+        }
+
+        .panel p {
+            color: #c6c6c6;
+            line-height: 1.7;
+        }
+
+        .alert {
+            margin-bottom: 18px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            line-height: 1.6;
+        }
+
+        .alert-success {
+            background: rgba(45, 166, 93, 0.16);
+            border-left: 4px solid #33a35c;
+            color: #cbf2d7;
+        }
+
+        .alert-error {
+            background: rgba(220, 80, 80, 0.14);
+            border-left: 4px solid #d9534f;
+            color: #ffc0c0;
+        }
+
+        .field {
+            margin-top: 18px;
+        }
+
+        label {
             display: block;
-            margin-bottom: 0.6rem;
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-            color: #1a1a1a;
-            font-weight: 600;
+            margin-bottom: 8px;
+            color: #dedede;
+            font-size: 0.92rem;
         }
 
-        /* Service Select */
-        .input-group select {
+        select,
+        textarea,
+        input {
             width: 100%;
-            padding: 0.9rem 1.2rem;
-            background: #ffffff;
-            border: none;
-            border-radius: 30px;
-            font-size: 1rem;
-            color: #111;
-            font-family: inherit;
-            cursor: pointer;
+            padding: 14px 16px;
+            border-radius: 16px;
+            border: 1px solid #2d2d2d;
+            background: #101010;
+            color: #f5f5f5;
+            font: inherit;
         }
 
-        .input-group select:focus {
+        select:focus,
+        textarea:focus,
+        input:focus {
             outline: none;
-            box-shadow: 0 0 0 3px rgba(0,0,0,0.2);
+            border-color: #ff7a1a;
+            box-shadow: 0 0 0 3px rgba(255, 122, 26, 0.16);
         }
 
-        /* Star Rating */
-        .rating-group {
-            margin-bottom: 1.5rem;
-            text-align: left;
-        }
-
-        .rating-group label {
-            display: block;
-            margin-bottom: 0.6rem;
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-            color: #1a1a1a;
-            font-weight: 600;
-        }
-
-        .stars {
-            display: flex;
-            gap: 0.5rem;
-            flex-direction: row-reverse;
-            justify-content: flex-end;
-        }
-
-        .stars input {
-            display: none;
-        }
-
-        .stars label {
-            font-size: 2.2rem;
-            color: #555;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-bottom: 0;
-        }
-
-        .stars label:hover,
-        .stars label:hover ~ label,
-        .stars input:checked ~ label {
-            color: #ffdd00;
-            text-shadow: 0 0 5px rgba(0,0,0,0.3);
-        }
-
-        /* Comment Textarea */
-        .input-group textarea {
-            width: 100%;
-            padding: 0.9rem 1.2rem;
-            background: #ffffff;
-            border: none;
-            border-radius: 20px;
-            font-size: 1rem;
-            color: #111;
-            transition: 0.2s;
-            font-family: inherit;
+        textarea {
+            min-height: 150px;
             resize: vertical;
         }
 
-        .input-group textarea:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(0,0,0,0.2);
+        .rating-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-top: 10px;
         }
 
-        .submit-btn {
-            background: #000000;
-            color: #ff6600;
-            border: none;
-            padding: 0.9rem 2rem;
-            font-size: 1rem;
-            font-weight: bold;
-            border-radius: 40px;
+        .rating-row label {
+            margin: 0;
             cursor: pointer;
-            transition: 0.2s;
-            width: 100%;
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
 
-        .submit-btn:hover {
-            background: #1a1a1a;
-            color: #ff8833;
-            transform: translateY(-2px);
+        .rating-row input {
+            display: none;
         }
 
-        /* Footer - No border line */
-        footer {
-            background-color: #000000;
+        .rating-pill {
+            display: block;
+            padding: 12px 10px;
+            border-radius: 16px;
             text-align: center;
-            padding: 35px 20px;
-            margin-top: 60px;
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-            color: #888;
+            background: #121212;
+            border: 1px solid #2c2c2c;
+            color: #d0d0d0;
+            transition: 0.2s ease;
         }
 
-        /* Responsive */
-        @media (max-width: 900px) {
+        .rating-row input:checked + .rating-pill,
+        .rating-pill:hover {
+            border-color: #ff7a1a;
+            background: rgba(255, 122, 26, 0.12);
+            color: #ffcfaa;
+        }
+
+        .button {
+            width: 100%;
+            margin-top: 18px;
+            padding: 15px 18px;
+            border: none;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #ff7a1a, #ff9d52);
+            color: #151515;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .history-list {
+            display: grid;
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .history-item {
+            padding: 18px;
+            border-radius: 18px;
+            background: #111111;
+            border: 1px solid #222222;
+        }
+
+        .history-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .history-top strong {
+            color: #ffffff;
+        }
+
+        .history-top span,
+        .history-meta {
+            color: #bdbdbd;
+            font-size: 0.94rem;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .status-approved {
+            background: rgba(45, 166, 93, 0.16);
+            color: #bcecc9;
+        }
+
+        .status-pending {
+            background: rgba(255, 122, 26, 0.14);
+            color: #ffcfaa;
+        }
+
+        .empty-state {
+            margin-top: 18px;
+            padding: 20px;
+            border-radius: 18px;
+            background: #111111;
+            border: 1px solid #222222;
+            color: #c7c7c7;
+        }
+
+        .support-box {
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(255, 122, 26, 0.1), rgba(255, 122, 26, 0.02));
+            border: 1px solid rgba(255, 122, 26, 0.18);
+            color: #d1d1d1;
+            line-height: 1.7;
+        }
+
+        footer {
+            text-align: center;
+            color: #979797;
+            padding: 30px 20px 40px;
+        }
+
+        @media (max-width: 920px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
             .navbar {
-                padding: 1rem 1.5rem;
+                padding: 16px 18px;
                 flex-direction: column;
-                gap: 10px;
+                align-items: flex-start;
             }
-            .nav-links a {
-                margin-left: 1rem;
-                margin-right: 1rem;
+
+            .panel,
+            .hero {
+                padding: 22px;
             }
-            .hero-overlay h1 {
-                font-size: 2rem;
-            }
-            main {
-                padding: 30px 15px;
+
+            .rating-row {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
 </head>
 <body>
-
-<!-- STATIC NAVIGATION BAR -->
-<div class="navbar">
-    <div class="logo">MAGIC HOTEL</div>
-    <div class="nav-links">
-        <a href="index.html">Home</a>
-        <a href="services.html">Services</a>
-        <a href="contact.html">Contact</a>
-    </div>
-</div>
-
-<!-- HERO SECTION - Expanded Height -->
-<div class="hero-feedback">
-    <div class="hero-overlay">
-        <h1>YOUR <span>FEEDBACK</span></h1>
-        <p>Your voice matters — help us create magical experiences</p>
-    </div>
-</div>
-
-<!-- MESSAGE DISPLAY -->
-<?php if (!empty($message)): ?>
-    <div class="message-container">
-        <div class="alert-success"><?php echo htmlspecialchars($message); ?></div>
-    </div>
-<?php elseif (!empty($error)): ?>
-    <div class="message-container">
-        <div class="alert-error"><?php echo htmlspecialchars($error); ?></div>
-    </div>
-<?php endif; ?>
-
-<main>
-    <div class="feedback-form-col">
-        <div class="form-container">
-            <h2>Share Your Experience</h2>
-            <p>Tell us about your stay at Magic Hotel</p>
-            
-            <form method="POST" action="">
-                <!-- Service Selection -->
-                <div class="input-group">
-                    <label>Select Service</label>
-                    <select name="service" required>
-                        <option value="">-- Choose a service --</option>
-                        <?php foreach ($services as $key => $name): ?>
-                            <option value="<?php echo $key; ?>" <?php echo ($selected_service == $key) ? 'selected' : ''; ?>>
-                                <?php echo $name; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                
-                <!-- Star Rating -->
-                <div class="rating-group">
-                    <label>Your Rating</label>
-                    <div class="stars">
-                        <input type="radio" name="rating" id="star5" value="5" <?php echo ($selected_rating == 5) ? 'checked' : ''; ?>>
-                        <label for="star5">★</label>
-                        <input type="radio" name="rating" id="star4" value="4" <?php echo ($selected_rating == 4) ? 'checked' : ''; ?>>
-                        <label for="star4">★</label>
-                        <input type="radio" name="rating" id="star3" value="3" <?php echo ($selected_rating == 3) ? 'checked' : ''; ?>>
-                        <label for="star3">★</label>
-                        <input type="radio" name="rating" id="star2" value="2" <?php echo ($selected_rating == 2) ? 'checked' : ''; ?>>
-                        <label for="star2">★</label>
-                        <input type="radio" name="rating" id="star1" value="1" <?php echo ($selected_rating == 1) ? 'checked' : ''; ?>>
-                        <label for="star1">★</label>
-                    </div>
-                </div>
-                
-                <!-- Comment -->
-                <div class="input-group">
-                    <label>Your Feedback / Comments</label>
-                    <textarea name="comment" rows="4" placeholder="Tell us what you loved or how we can improve..."><?php echo htmlspecialchars($user_comment); ?></textarea>
-                </div>
-                
-                <button type="submit" name="submit_feedback" class="submit-btn">Submit Feedback</button>
-            </form>
+    <nav class="navbar">
+        <a class="logo" href="client_dashboard.php"><?php echo htmlspecialchars($settings['hotel_name']); ?></a>
+        <div class="nav-links">
+            <a href="client_dashboard.php">Dashboard</a>
+            <a href="services.php">Services</a>
+            <a href="contact.php">Contact</a>
+            <a href="booking.php">Book More</a>
         </div>
-    </div>
-</main>
+    </nav>
 
-<footer>
-    © 2025 MAGIC HOTEL LTD — Where elegance meets comfort. All rights reserved.
-</footer>
+    <main class="wrap">
+        <section class="hero">
+            <h1>Guest feedback for <?php echo htmlspecialchars($userName); ?></h1>
+            <p>Tell us how your stay, meal, drink, or wellness service went. Your comments now feed directly into the admin management dashboard for review and follow-up.</p>
+        </section>
 
+        <div class="layout">
+            <section class="panel">
+                <h2>Share Feedback</h2>
+                <p>Choose the service you want to review and leave a short note for the hotel team.</p>
+
+                <?php if ($message !== ''): ?>
+                    <div class="alert alert-success"><?php echo htmlspecialchars($message); ?></div>
+                <?php endif; ?>
+
+                <?php if ($error !== ''): ?>
+                    <div class="alert alert-error"><?php echo htmlspecialchars($error); ?></div>
+                <?php endif; ?>
+
+                <form method="POST">
+                    <div class="field">
+                        <label for="service_id">Service</label>
+                        <select id="service_id" name="service_id" required>
+                            <option value="">Select a service</option>
+                            <?php foreach ($catalog as $category => $sections): ?>
+                                <optgroup label="<?php echo htmlspecialchars($categoryMeta[$category]['label'] ?? ucfirst($category)); ?>">
+                                    <?php foreach ($sections as $sectionName => $services): ?>
+                                        <?php foreach ($services as $service): ?>
+                                            <option value="<?php echo (int) $service['id']; ?>">
+                                                <?php echo htmlspecialchars($service['service_name'] . ' - ' . $sectionName); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    <?php endforeach; ?>
+                                </optgroup>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label>Rating</label>
+                        <div class="rating-row">
+                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <label>
+                                    <input type="radio" name="rating" value="<?php echo $i; ?>" required>
+                                    <span class="rating-pill"><?php echo $i; ?> / 5</span>
+                                </label>
+                            <?php endfor; ?>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="comment">Comment</label>
+                        <textarea id="comment" name="comment" placeholder="What stood out, and what can we improve?" required></textarea>
+                    </div>
+
+                    <button class="button" type="submit" name="submit_feedback">Submit Feedback</button>
+                </form>
+            </section>
+
+            <section class="panel">
+                <h2>Recent Feedback</h2>
+                <p>Your latest comments and whether they have already been approved for internal review reporting.</p>
+
+                <?php if (!empty($recentFeedback)): ?>
+                    <div class="history-list">
+                        <?php foreach ($recentFeedback as $item): ?>
+                            <article class="history-item">
+                                <div class="history-top">
+                                    <div>
+                                        <strong><?php echo htmlspecialchars($item['service_name']); ?></strong>
+                                        <div class="history-meta"><?php echo htmlspecialchars($categoryMeta[$item['service_category']]['label'] ?? ucfirst($item['service_category'])); ?> service</div>
+                                    </div>
+                                    <span><?php echo htmlspecialchars(date('d M Y', strtotime($item['created_at']))); ?></span>
+                                </div>
+
+                                <div class="history-meta">Rating: <?php echo (int) $item['rating']; ?>/5</div>
+                                <p style="margin-top: 12px;"><?php echo nl2br(htmlspecialchars($item['comment'])); ?></p>
+                                <div style="margin-top: 14px;">
+                                    <span class="status-pill <?php echo ((int) $item['is_approved'] === 1) ? 'status-approved' : 'status-pending'; ?>">
+                                        <?php echo ((int) $item['is_approved'] === 1) ? 'Approved' : 'Pending review'; ?>
+                                    </span>
+                                </div>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <div class="empty-state">You have not submitted feedback yet.</div>
+                <?php endif; ?>
+
+                <div class="support-box">
+                    Need direct help instead? Contact the team at <?php echo htmlspecialchars($settings['primary_phone']); ?> or <?php echo htmlspecialchars($settings['email']); ?>.
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <?php echo date('Y'); ?> <?php echo htmlspecialchars($settings['hotel_name']); ?>. <?php echo htmlspecialchars($settings['tagline']); ?>
+    </footer>
 </body>
 </html>
-```
+

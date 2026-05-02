@@ -1,23 +1,21 @@
 <?php
-// config.php - Database configuration
-// Save this file in your project root folder
 
-$servername = "localhost";
-$username = "root";
-$password = "";  // Empty for XAMPP default
-$dbname = "magic_hotel";
+date_default_timezone_set('Africa/Nairobi');
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+$servername = '127.0.0.1';
+$username = 'root';
+$password = 'Joash@outlook1';
+$dbname = 'magic_hotel';
+$port = 3306;
 
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+if (!extension_loaded('mysqli')) {
+    die('The mysqli extension is not loaded. Run the app with XAMPP PHP or enable mysqli first.');
 }
 
-// Set character set to UTF-8
-$conn->set_charset("utf8mb4");
+$conn = new mysqli($servername, $username, $password, $dbname, $port);
 
-// For testing (remove after confirmation)
-// echo "Connected successfully";
-?>
+if ($conn->connect_error) {
+    die('Connection failed: ' . $conn->connect_error . '. If this is a fresh setup, run setup_database.php first.');
+}
+
+$conn->set_charset('utf8mb4');
