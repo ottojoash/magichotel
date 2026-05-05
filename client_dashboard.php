@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_booking'])) {
 
     $serviceIds = $_POST['service_id'] ?? [];
     $quantities = $_POST['qty'] ?? [];
+    $bookingError = '';
     $created = createBookingsFromSelection($conn, $userId, $serviceIds, $quantities, $bookingError);
 
     if ($created > 0) {
