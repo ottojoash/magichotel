@@ -23,11 +23,14 @@ if (!extension_loaded('mysqli')) {
     die('The mysqli extension is not loaded. Run the app with XAMPP PHP or enable mysqli first.');
 }
 
+mysqli_report(MYSQLI_REPORT_OFF);
+
 if ($isProductionHost && ($password === '' || $password === 'PASTE_YOUR_INFINITYFREE_PASSWORD')) {
     die('Database password is missing in config.php. Set your real InfinityFree MySQL password for production.');
 }
 
-$conn = new mysqli($servername, $username, $password, $dbname, $port);
+
+$conn = @new mysqli($servername, $username, $password, $dbname, $port);
 
 if ($conn->connect_error) {
     if ($isProductionHost) {
