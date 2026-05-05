@@ -33,7 +33,7 @@ foreach ($categoryOrder as $categoryKey) {
 
 $bookingSteps[] = ['key' => 'review', 'title' => 'Review & Submit', 'category' => null];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim((string) ($_POST['name'] ?? ''));
     $email = trim((string) ($_POST['email'] ?? ''));
     $phone = trim((string) ($_POST['phone'] ?? ''));
@@ -100,6 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
         }
 
         if ($error === '' && isset($userId)) {
+            $bookingError = '';
             $created = createBookingsFromSelection($conn, $userId, $serviceIds, $quantities, $bookingError);
 
             if ($created > 0) {
@@ -733,6 +734,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
         <div class="wizard-layout">
             <section class="wizard">
                 <form id="bookingWizard" method="POST">
+                    <button type="submit" name="submit" value="1" id="realSubmit" hidden>Submit</button>
                     <div class="stepper">
                         <?php foreach ($bookingSteps as $stepIndex => $step): ?>
                             <button
@@ -900,6 +902,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
             var panels = Array.prototype.slice.call(document.querySelectorAll('[data-step-panel]'));
             var chips = Array.prototype.slice.call(document.querySelectorAll('[data-step-target]'));
             var proceedButton = document.getElementById('proceedToBook');
+            var realSubmitButton = document.getElementById('realSubmit');
             var confirmOverlay = document.getElementById('confirmOverlay');
             var cancelConfirm = document.getElementById('cancelConfirm');
             var acceptConfirm = document.getElementById('acceptConfirm');
@@ -1066,11 +1069,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
             }
 
             function submitWizard() {
-                var hiddenSubmit = document.createElement('input');
-                hiddenSubmit.type = 'hidden';
-                hiddenSubmit.name = 'submit';
-                hiddenSubmit.value = '1';
-                wizard.appendChild(hiddenSubmit);
+                closeConfirmModal();
+
+                if (realSubmitButton) {
+                    if (typeof wizard.requestSubmit === 'function') {
+                        wizard.requestSubmit(realSubmitButton);
+                    } else {
+                        realSubmitButton.click();
+                    }
+                    return;
+                }
+
                 wizard.submit();
             }
 

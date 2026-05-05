@@ -63,3 +63,59 @@
 [Tue May  5 10:41:13 2026] 127.0.0.1:51172 [200]: POST /booking.php
 [Tue May  5 10:41:13 2026] 127.0.0.1:51172 Closing
 [Tue May  5 10:41:13 2026] 127.0.0.1:57126 Accepted
+[Tue May  5 10:42:26 2026] 127.0.0.1:57126 Closed without sending a request; it was probably just an unused speculative preconnection
+[Tue May  5 10:42:26 2026] 127.0.0.1:57126 Closing
+[Tue May  5 13:50:09 2026] 127.0.0.1:64109 Accepted
+[Tue May  5 13:50:24 2026] 127.0.0.1:64109 [200]: GET /
+[Tue May  5 13:50:24 2026] 127.0.0.1:64109 Closing
+[Tue May  5 13:50:24 2026] 127.0.0.1:59683 Accepted
+[Tue May  5 13:50:24 2026] 127.0.0.1:64257 Accepted
+[Tue May  5 13:50:27 2026] 127.0.0.1:59683 [200]: GET /booking.php
+[Tue May  5 13:50:27 2026] 127.0.0.1:59683 Closing
+[Tue May  5 13:51:11 2026] 127.0.0.1:64257 [200]: GET /login.php
+[Tue May  5 13:51:11 2026] 127.0.0.1:64257 Closing
+[Tue May  5 13:51:11 2026] 127.0.0.1:52168 Accepted
+[Tue May  5 13:51:16 2026] 127.0.0.1:52168 [200]: POST /login.php
+[Tue May  5 13:51:17 2026] 127.0.0.1:52168 Closing
+[Tue May  5 13:51:17 2026] 127.0.0.1:62830 Accepted
+[Tue May  5 13:51:22 2026] 127.0.0.1:62830 [200]: GET /index.html
+[Tue May  5 13:51:22 2026] 127.0.0.1:62830 Closing
+[Tue May  5 13:51:22 2026] 127.0.0.1:52861 Accepted
+[Tue May  5 13:51:22 2026] 127.0.0.1:57764 Accepted
+[Tue May  5 13:52:23 2026] 127.0.0.1:52861 Closed without sending a request; it was probably just an unused speculative preconnection
+[Tue May  5 13:52:23 2026] 127.0.0.1:52861 Closing
+[Tue May  5 13:52:23 2026] 127.0.0.1:57764 Closed without sending a request; it was probably just an unused speculative preconnection
+[Tue May  5 13:52:23 2026] 127.0.0.1:57764 Closing
+[Tue May  5 17:56:01 2026] 127.0.0.1:55655 Accepted
+[Tue May  5 17:56:01 2026] 127.0.0.1:55655 [200]: GET /
+[Tue May  5 17:56:01 2026] 127.0.0.1:55655 Closing
+[Tue May  5 17:56:01 2026] 127.0.0.1:56255 Accepted
+[Tue May  5 17:56:01 2026] 127.0.0.1:62651 Accepted
+[Tue May  5 17:56:05 2026] 127.0.0.1:56255 [200]: GET /booking.php
+[Tue May  5 17:56:05 2026] 127.0.0.1:56255 Closing
+[Tue May  5 17:56:58 2026] PHP Fatal error:  Uncaught TypeError: createBookingsFromSelection(): Argument #5 ($errorMessage) must be of type string, null given, called in C:\Users\OTTO JOASH\Documents\Github\magichotel\booking.php on line 103 and defined in C:\Users\OTTO JOASH\Documents\Github\magichotel\hotel_helpers.php:138
+Stack trace:
+#0 C:\Users\OTTO JOASH\Documents\Github\magichotel\booking.php(103): createBookingsFromSelection(Object(mysqli), 3, Array, Array, NULL)
+#1 {main}
+  thrown in C:\Users\OTTO JOASH\Documents\Github\magichotel\hotel_helpers.php on line 138
+[Tue May  5 17:56:58 2026] 127.0.0.1:62651 [200]: POST /booking.php - Uncaught TypeError: createBookingsFromSelection(): Argument #5 ($errorMessage) must be of type string, null given, called in C:\Users\OTTO JOASH\Documents\Github\magichotel\booking.php on line 103 and defined in C:\Users\OTTO JOASH\Documents\Github\magichotel\hotel_helpers.php:138
+Stack trace:
+#0 C:\Users\OTTO JOASH\Documents\Github\magichotel\booking.php(103): createBookingsFromSelection(Object(mysqli), 3, Array, Array, NULL)
+#1 {main}
+  thrown in C:\Users\OTTO JOASH\Documents\Github\magichotel\hotel_helpers.php on line 138
+[Tue May  5 17:56:58 2026] 127.0.0.1:62651 Closing
+[Tue May  5 17:56:58 2026] 127.0.0.1:52646 Accepted
+[Tue May  5 17:58:04 2026] 127.0.0.1:52646 Closed without sending a request; it was probably just an unused speculative preconnection
+[Tue May  5 17:58:04 2026] 127.0.0.1:52646 Closing
+[Tue May  5 17:58:12 2026] 127.0.0.1:51856 Accepted
+[Tue May  5 17:58:12 2026] 127.0.0.1:51856 [200]: POST /booking.php
+[Tue May  5 17:58:12 2026] 127.0.0.1:51856 Closing
+[Tue May  5 17:58:12 2026] 127.0.0.1:55650 Accepted
+[Tue May  5 17:58:20 2026] 127.0.0.1:55650 [200]: GET /login.php
+[Tue May  5 17:58:20 2026] 127.0.0.1:55650 Closing
+[Tue May  5 17:58:20 2026] 127.0.0.1:61104 Accepted
+[Tue May  5 17:58:27 2026] 127.0.0.1:61104 [302]: POST /login.php
+[Tue May  5 17:58:27 2026] 127.0.0.1:61104 Closing
+[Tue May  5 17:58:27 2026] 127.0.0.1:50356 Accepted
+[Tue May  5 17:58:27 2026] 127.0.0.1:50356 [200]: GET /client_dashboard.php
+[Tue May  5 17:58:27 2026] 127.0.0.1:50356 Closing
