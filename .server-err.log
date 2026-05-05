@@ -53,3 +53,13 @@
 [Sat May  2 19:28:24 2026] 127.0.0.1:49672 Accepted
 [Sat May  2 19:28:24 2026] 127.0.0.1:49672 [200]: GET /admin_dashboard.php
 [Sat May  2 19:28:24 2026] 127.0.0.1:49672 Closing
+[Tue May  5 10:40:42 2026] 127.0.0.1:57239 Accepted
+[Tue May  5 10:40:42 2026] 127.0.0.1:57239 [200]: GET /
+[Tue May  5 10:40:42 2026] 127.0.0.1:57239 Closing
+[Tue May  5 10:40:42 2026] 127.0.0.1:61351 Accepted
+[Tue May  5 10:40:42 2026] 127.0.0.1:51172 Accepted
+[Tue May  5 10:40:45 2026] 127.0.0.1:61351 [200]: GET /booking.php
+[Tue May  5 10:40:45 2026] 127.0.0.1:61351 Closing
+[Tue May  5 10:41:13 2026] 127.0.0.1:51172 [200]: POST /booking.php
+[Tue May  5 10:41:13 2026] 127.0.0.1:51172 Closing
+[Tue May  5 10:41:13 2026] 127.0.0.1:57126 Accepted
